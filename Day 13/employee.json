@@ -1,0 +1,17 @@
+[
+    {
+        "name": "Alice Johnson",
+        "position": "Manager",
+        "salary": 75000
+    },
+    {
+        "name": "Bob Smith",
+        "position": "Engineer",
+        "salary": 65000
+    },
+    {
+        "name": "Carol White",
+        "position": "Designer",
+        "salary": 60000
+    }
+]
