@@ -3,36 +3,40 @@ class Queue:
         self.size = size
         self.data = [None]*self.size
         self.front = 0
-        self.rear = 0
+        self.rear = -1
         # self.item_count = 0
 
     def push(self,element):
         if not self.is_full():
-            self.data[self.rear] = element
             self.rear += 1
-            self.item_count += 1    
+            self.data[self.rear] = element
+            # self.item_count += 1    
             print(f"{element} is pushed")     
         else:
-            self.rear = 0
-            
+            # self.rear = 0
             raise OverflowError("queue is overflow")
         
     def pop(self):
-        if not self.front >= self.size:
+        if not self.is_empty() and self.front < self.rear:
             print(f"{self.data[self.front]} is popped")
             self.data[self.front] = None
             self.front += 1
-            self.item_count -= 1
-        else:
+            # self.item_count -= 1
+        elif self.front == self.rear:
+            print(f"{self.data[self.front]} is popped")
+            self.data[self.front] = None
             self.front = 0
+            self.rear = -1
+        else:
+            # self.front = 0
             raise IndexError("queue is underflow")
         
     def is_full(self):
-        if self.item_count >= self.size:
+        if self.rear == self.size-1:
             return True
         return False
     def is_empty(self):
-        if self.item_count == 0:
+        if self.front == self.rear+1:
             return True
         else:
             return False
