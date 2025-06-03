@@ -1,8 +1,3 @@
-# why selection sort made
-# what is the complexity of selection sort
-# how selection sort work
-# is there any efficient way to do 
-
 data = [25,15,-9,0,8,6]
 
 def selection_sort(data):
