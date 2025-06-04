@@ -7,16 +7,14 @@ class Deque:
     def is_full(self):
         if self.front == 0 and self.rear == self.size-1 or (self.front == self.rear+1):
             return True
-        else:
-            return False
+        return False
     def is_empty(self):
         if self.front == -1:
             return True
-        else:
-            return False
+        return False
     def push_left(self,element):
         if self.is_full():
-            raise OverflowError
+            raise OverflowError("deque is overflow")
         elif self.is_empty():
             self.front =0
             self.rear =0
@@ -27,7 +25,7 @@ class Deque:
         self.data[self.front] = element
     def push(self,element):
         if self.is_full():
-            raise OverflowError
+            raise OverflowError("deque is overflow")
         elif self.is_empty():
             self.front =0
             self.rear =0
