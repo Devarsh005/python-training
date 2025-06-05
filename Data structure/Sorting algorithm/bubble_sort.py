@@ -6,7 +6,7 @@ def bubble_sort(array):
         for j in range(0,n-i):
             if array[j] > array[j+1]:
                 array[j] , array[j+1] = array[j+1] , array[j]
-    print(array)
+    return array
 
 numbers = [7,19,-3,4,0]
-bubble_sort(numbers)
+print(f" sorted list is: {bubble_sort(numbers)}")
