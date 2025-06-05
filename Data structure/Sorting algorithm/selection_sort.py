@@ -8,5 +8,5 @@ def selection_sort(data):
             if data[next] < data[minimum] :
                 minimum = next
         data[i] ,data[minimum] = data[minimum] , data[i]
-    print(data)
-selection_sort(data)
+    return data
+print(f"sorted list is : {selection_sort(data)}")
