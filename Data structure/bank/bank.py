@@ -1,3 +1,4 @@
+import validations
 class Bank:
     bank_name = "HDFC bank"
     def __init__(self):
@@ -85,18 +86,27 @@ if __name__ == "__main__":
         match operation:
             case "1":
                 """create an account"""
-                name = input("enter your name - ")
-                account_number = input("enter account number - ")
-                password = input("enter your password - ")
-                account = bank.create_account(name,password,account_number) 
-                if account:
-                    print("Account created successfully")
-                else:
-                    print("Account number already exits")
+                try:
+                    name = input("enter your name - ")
+                    validations.is_valid_name(name)
+                    account_number = input("enter account number - ")
+                    validations.is_valid_account(account_number)
+                    password = input("enter your password - ")
+                    # valid name
+                    # account number
+                    # password
+                    account = bank.create_account(name,password,account_number) 
+                    if account:
+                        print("Account created successfully")
+                    else:
+                        print("Account number already exits")
+                except Exception as e:
+                    print(e)
                 
             case "2":
                 """login"""
                 account_number = input("enter the account number - ")
+                validations.is_valid_account(account_number)
                 password = input("enter the password - ")
                 if bank.authentication(account_number,password):
                     print("login successfully")
