@@ -82,6 +82,7 @@ class Account:
         """return the balance of user """
         return self.balance
     def take_a_loan(self,amount,duration):
+        """give a loan from bank to user"""
         interest_rate = 7
         total_with_interest = amount + (amount*interest_rate/100)
         emi = total_with_interest/duration
@@ -91,6 +92,7 @@ class Account:
         print(f"your minimum due per month is {emi}")
         return total_with_interest,emi
     def pay_emi(self , due_amount,remaining_amount,duration):
+        """give minimum due to bank """
         remaining_amount -= due_amount
         duration -= 1
         self.balance -= due_amount
@@ -257,7 +259,7 @@ if __name__ == "__main__":
                         print(f"{account.name} account balance is {account.balance}")
                         bank.balance -= amount
                     else:
-                        print(f"amount is larget , amount should be less than {bank.balance*20/100}")
+                        print(f"amount is larger , amount should be less than {bank.balance*20/100}")
                 except Exception as e:
                     print(e)
             case "14":
