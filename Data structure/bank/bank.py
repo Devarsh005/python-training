@@ -6,6 +6,7 @@ class Bank:
         self.balance = 1_00_00_000
     # create a new account
     def create_account(self,name:str,password:str,account_number:str):
+        """create Account if it is not exits"""
         if account_number in self.list_of_accounts:
             return False
         else:
@@ -13,15 +14,12 @@ class Bank:
             self.list_of_accounts[account_number] = account
             return True
     def authentication(self,account_number:str,password:str):
+        """return the account if the credential is right"""
         account = self.list_of_accounts.get(account_number)
         if account and account.check_password(password):
             return account
         else:
             raise validations.AccountNotFoundError("AccountNotFoundError: this account not registered in bank")
-    def get_account(self,account_number):
-        return self.list_of_accounts.get(account_number)
-    def display(self):
-        print(self.list_of_accounts)
     # open particular account
     # 
 
@@ -34,17 +32,21 @@ class Account:
         self.transactions = []
         self.info = {"name":self.name , "account_number":self.account_number , "balance":self.balance}
     def profile(self):
+        """show the user profile information like name , account_number and balance"""
         print(self.info)
     def check_password(self,password):
+        """return True if password is matched"""
         if password == self.password:
             return True
         else:
             return False
     def add_money(self,money):
+        """Add a cash money to user account """
         self.balance += money
         self.info["balance"] = self.balance
         self.transactions.append(f"{money} cash added")
     def withdraw_money(self,money):
+        """withdraw a cash money from user account"""
         if self.balance > 0:
             self.balance -= money
             self.info["balance"] = self.balance
@@ -52,6 +54,7 @@ class Account:
         else:
             raise validations.InsuffiecientFundError("InsuffiecientFundError: insuffiecient balance")
     def transfer_amount(self,reciever,amount):
+        """transfer the amount to one account to another account"""
         if self.account_number == reciever.account_number:
             raise validations.DuplicateAccountError("DuplicateAccountError: Reciever cannot be sender")
         elif self.balance >0:
@@ -64,9 +67,11 @@ class Account:
         else:
             raise validations.InsuffiecientFundError("InsuffiecientFundError: insuffiecient balance")
     def transaction(self):
+        """show the transaction of user"""
         for transaction in self.transactions:
             print(transaction)
     def check_balance(self):
+        """return the balance of user """
         return self.balance
 
 
