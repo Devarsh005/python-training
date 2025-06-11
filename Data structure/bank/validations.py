@@ -1,6 +1,3 @@
-# import json for check the account is duplicate or not
-import json
-
 # create a custom Exception
 class DuplicateAccountError(Exception):
     ...
@@ -67,7 +64,4 @@ def is_valid_password(password:str):
     else:
         raise ValueError("ValueError: password cannot be empty")
     
-def is_account_duplicate(account_number:str):
-    with open("users.json","r") as file:
-        acc_number = json.load(file)
-        print(acc_number)
+
