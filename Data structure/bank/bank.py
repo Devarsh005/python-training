@@ -1,4 +1,5 @@
 import validations
+import random
 class Bank:
     bank_name = "HDFC bank"
     def __init__(self):
@@ -6,7 +7,7 @@ class Bank:
         self.balance = 1_00_000
         self.loan_users = []
     # create a new account
-    def create_account(self,name:str,password:str,account_number:str):
+    def create_account(self,name,password,account_number):
         """create Account if it is not exits"""
         if account_number in self.list_of_accounts:
             return False
@@ -14,13 +15,19 @@ class Bank:
             account = Account(name,password,account_number)
             self.list_of_accounts[account_number] = account
             return True
-    def authentication(self,account_number:str,password:str)->'Account':
+    def authentication(self,account_number,password)->'Account':
         """return the account if the credential is right"""
         account = self.list_of_accounts.get(account_number)
         if account and account.check_password(password):
             return account
         else:
             raise validations.AccountNotFoundError("AccountNotFoundError: this account not registered in bank")
+    def is_user(self,account_number)->'Account':
+        if account_number in self.list_of_accounts:
+            user = self.list_of_accounts.get(account_number)
+            return user
+        else:
+            raise validations.AccountNotFoundError("AccountNotFoundError: This account not registerd in bank")
     def bank_info(self):
         """shows the bank name , bank balance , bank account list"""
         print("HDFC BANK")
@@ -48,30 +55,34 @@ class Account:
             return True
         else:
             return False
-    def add_money(self,money):
+    def add_money(self,money,sender="you"):
         """Add a cash money to user account """
         self.balance += money
         self.info["balance"] = self.balance
-        self.transactions.append(f"{money} cash added")
-    def withdraw_money(self,money):
+        if sender == "you":
+            self.transactions.append(f"{money} cash added")
+        else:
+            self.transactions.append(f"credited {amount} from {sender}")
+    def withdraw_money(self,money,reciever="you"):
         """withdraw a cash money from user account"""
-        if self.balance > 0:
+        if self.balance > money:
             self.balance -= money
             self.info["balance"] = self.balance
-            self.transactions.append(f"{money} cash withdraw")
+            if reciever == "you":
+                self.transactions.append(f"{money} cash withdraw")
+            else:
+                self.transactions.append(f"{self.name} sent {money} to {reciever}")
         else:
             raise validations.InsuffiecientFundError("InsuffiecientFundError: insuffiecient balance")
-    def transfer_amount(self,reciever,amount):
+    def transfer_amount(self,reciever:'Account',amount):
         """transfer the amount to one account to another account"""
         if self.account_number == reciever.account_number:
             raise validations.DuplicateAccountError("DuplicateAccountError: Reciever cannot be sender")
-        elif self.balance >0:
-            reciever.balance += amount
-            self.balance -= amount
-            self.info["balance"] = self.balance
-            reciever.info["balance"] = reciever.balance
-            self.transactions.append(f"{self.name} sent {amount} to {reciever.name}")
-            reciever.transactions.append(f"{reciever.name} credited {amount} from {self.name} ")
+        elif self.balance >amount:
+            self.withdraw_money(amount,reciever.name)
+            reciever.add_money(amount,self.name)
+            # self.transactions.append(f"{self.name} sent {amount} to {reciever.name}")
+            # reciever.transactions.append(f"credited {amount} from {self.name}")
         else:
             raise validations.InsuffiecientFundError("InsuffiecientFundError: insuffiecient balance")
     def transaction(self):
@@ -106,23 +117,17 @@ if __name__ == "__main__":
     cases = """
     1. create a account
     2. login
-    3. logout
-    4. add money
-    5. withdraw money
-    6. close account
-    7. transfer amount
-    8. display profile
-    9. show transaction
-    10. show menu script
-    11. show all users
-    12. show Bank profile
-    13. take a loan
-    14. pay emi
+    3. close account
+    4. show Bank profile
+    5. show all users
+    6. show menu
+    7. loan_candidates_details
+    8. Exit
                 """
     print(cases)
     flag = True
     while flag:
-        print("press 10 for menu ")
+        print("press 6 for menu ")
         operation = input("\nchoose option - \n") 
         match operation:
             case "1":
@@ -130,13 +135,19 @@ if __name__ == "__main__":
                 try:
                     name = input("enter your name - ")
                     validations.is_valid_name(name)
-                    account_number = input("enter account number - ")
-                    validations.is_valid_account(account_number)
+                    random_acc_num = random.randint(10_00_000,11_00_000)
+                    account_number = None
+                    while not account_number:
+                        if not random_acc_num in bank.list_of_accounts:
+                            account_number = random_acc_num
+                        else:
+                            random_acc_num = random.randint(10_00_000,11_00_000)
+                    # validations.is_valid_account(account_number)
                     password = input("enter your password - ")
                     validations.is_valid_password(password)
                     account = bank.create_account(name,password,account_number) 
                     if account:
-                        print("Account created successfully")
+                        print(f"user name :{name}\nuser_account_number:{account_number}\nAccount created successfully")
                     else:
                         print("Account number already exits\n please login")
                 except Exception as e:
@@ -146,52 +157,117 @@ if __name__ == "__main__":
                 """login"""
                 try:
                     account_number = input("enter the account number - ")
-                    validations.is_valid_account(account_number)
+                    account_number = validations.is_valid_account(account_number) # return integer account number
                     password = input("enter the password - ")
                     validations.is_valid_password(password)
-                    if bank.authentication(account_number,password):
-                        print("login successfully")
+                    user_account = bank.authentication(account_number,password)
+                    if user_account:
+                        print(f"{user_account.name} login successfully")
+                        case = """
+    1. add money
+    2. withdraw money
+    3. transfer amount
+    4. display profile
+    5. show transaction
+    6. take a loan
+    7. pay emi
+    8. show menu script
+    9. logout
+        """             
+                        print(case)
+                        flag = True
+                        while flag:
+                            print("press 8 for menu ")
+                            operation = input("\nchoose option - \n") 
+                            match operation:
+                                case "1":
+                                    """add money"""
+                                    try:
+                                        amount = float(input("enter amount - "))
+                                        user_account.add_money(amount)
+                                        print(f"{amount} added . current balance - {user_account.check_balance()}")
+                                        bank.balance += amount
+                                    except Exception as e:
+                                        print(e)
+                                case "2":
+                                    """withdraw money"""
+                                    try:
+                                        amount = float(input("enter amount - "))
+                                        user_account.withdraw_money(amount)
+                                        print(f"{amount} withdraw . current balance - {user_account.check_balance()}")
+                                        bank.balance -= amount
+                                    except Exception as e:
+                                        print(e)
+                                case "3":
+                                    "transfer amount"
+                                    try:
+                                        account_number = input("enter the reciever account number - ")
+                                        account_number = validations.is_valid_account(account_number) # return the integer account number if the account number is valid
+                                        # password = input("enter the reciever password - ")
+                                        reciever = bank.is_user(account_number)
+                                        amount = float(input("enter amount - "))
+                                        user_account.transfer_amount(reciever,amount)
+                                        print(f"{user_account.name} sent {amount} to {reciever.name}")
+                                    except Exception as e:
+                                        print(e)
+                                case "4":
+                                    "display profile"
+                                    try:
+                                        user_account.profile()
+                                    except Exception as e:
+                                        print(e)
+                                case "5":
+                                    "show transaction"
+                                    try:
+                                        user_account.transaction()
+                                    except Exception as e:
+                                        print(e)
+                                case "6":
+                                    """take a loan from bank"""
+                                    try:
+                                        amount = int(input("enter amount of loan"))
+                                        if amount < (bank.balance*20/100) :
+                                            bank.loan_users.append(user_account.account_number)
+                                            duration = int(input("enter duration for loan"))
+                                            total_amount_with_interest , due_amount = user_account.take_a_loan(amount,duration)
+                                            print(f"{user_account.name} account balance is {user_account.balance}")
+                                            bank.balance -= amount
+                                        else:
+                                            print(f"amount is larger , amount should be less than {bank.balance*20/100}")
+                                    except Exception as e:
+                                        print(e)
+                                case "7":
+                                    """pay emi"""
+                                    try:
+                                        if account_number in bank.loan_users:
+                                            if duration != 0:
+                                                total_amount_with_interest , duration = user_account.pay_emi(due_amount,total_amount_with_interest,duration)
+                                                bank.balance += due_amount
+                                                print(f"{due_amount} is paid and user current balance is {user_account.balance}")
+                                                print(f"{duration} are remaining")
+                                            else:
+                                                print("all dues are paid ")
+                                                break
+                                    except Exception as e:
+                                        print(e)
+                                case "8":
+                                    "show Menu script"
+                                    print(case)
+                                case "9":
+                                    print(f"{user_account.name} logout successfully")
+                                    break
+
                     else:
                         print("invalid credential")
                 except Exception as e:
                     print(e)
-
             case "3":
-                """logout"""
-                print("logout successfully")
-                break
-
-            case "4":
-                """add money"""
-                try:
-                    account_number = input("enter the account number - ")
-                    password = input("enter the password - ")
-                    account = bank.authentication(account_number,password)
-                    amount = float(input("enter amount - "))
-                    account.add_money(amount)
-                    print(f"{amount} added . current balance - {account.check_balance()}")
-                    bank.balance += amount
-                except Exception as e:
-                    print(e)
-
-            case "5":
-                """withdraw money"""
-                try:
-                    account_number = input("enter the account number - ")
-                    password = input("enter the password - ")
-                    account = bank.authentication(account_number,password)
-                    amount = float(input("enter amount - "))
-                    account.withdraw_money(amount)
-                    print(f"{amount} withdraw . current balance - {account.check_balance()}")
-                    bank.balance -= amount
-                except Exception as e:
-                    print(e)
-
-            case "6":
                 """close account"""
                 try:
                     account_number = input("enter the account number - ")
-                    password = input("enter tha password")
+                    account_number = validations.is_valid_account(account_number) # return the integer account numer
+                    password = input("enter tha password -  ")
+                    validations.is_valid_password(password)
                     account = bank.authentication(account_number,password)
                     bank.balance -= account.balance
                     del bank.list_of_accounts[account_number]
@@ -199,87 +275,26 @@ if __name__ == "__main__":
                 except Exception as e:
                     print(e)
 
-            case "7":
-                "transfer amount"
-                try:
-                    account_number = input("enter the sender account number - ")
-                    password = input("enter the sender password - ")
-                    sender = bank.authentication(account_number,password)
-
-                    amount = float(input("enter amount - "))
-
-                    account_number = input("enter the reciever account number - ")
-                    password = input("enter the reciever password - ")
-                    reciever = bank.authentication(account_number,password)
-                    sender.transfer_amount(reciever,amount)
-                    print(f"{sender.name} sent {amount} to {reciever.name}")
-                except Exception as e:
-                    print(e)
-
-            case "8":
-                "display profile"
-                try:
-                    account_number = input("enter the account number - ")
-                    password = input("enter the password - ")
-                    account = bank.authentication(account_number,password)
-                    account.profile()
-                except Exception as e:
-                    print(e)
-            case "9":
-
-                "show transaction"
-                try:
-                    account_number = input("enter the account number - ")
-                    password = input("enter the password - ")
-                    account = bank.authentication(account_number,password)
-                    account.transaction()
-                except Exception as e:
-                    print(e)
-            case "10":
+            case "4":
+                """show bank info"""
+                if bank:
+                    bank.bank_info()
+                else:
+                    print("The bank has no users")
+            case "5":
+                """show all users"""
+                if bank.list_of_accounts:
+                    for account_number,account in bank.list_of_accounts.items():
+                        print(f"{account_number} : {account.info}")
+                else:
+                    print("The Bank has no users")
+            case "6":
                 "show Menu script"
                 print(cases)
-            case "11":
-                """show all users"""
-                for account_number,account in bank.list_of_accounts.items():
-                    print(f"{account_number} : {account.info}")
-            case "12":
-                """show bank info"""
-                bank.bank_info()
-            case "13":
-                """take a loan from bank"""
-                try:
-                    account_number = input("enter the account number - ")
-                    password = input("enter the password - ")
-                    account = bank.authentication(account_number,password)
-                    amount = int(input("enter amount of loan"))
-                    if amount < (bank.balance*20/100) :
-                        bank.loan_users.append(account.account_number)
-                        duration = int(input("enter duration for loan"))
-                        total_amount_with_interest , due_amount = account.take_a_loan(amount,duration)
-                        print(f"{account.name} account balance is {account.balance}")
-                        bank.balance -= amount
-                    else:
-                        print(f"amount is larger , amount should be less than {bank.balance*20/100}")
-                except Exception as e:
-                    print(e)
-            case "14":
-                """pay emi"""
-                try:
-                    account_number = input("enter the account number - ")
-                    password = input("enter the password - ")
-                    account = bank.authentication(account_number,password)
-                    if account_number in bank.loan_users:
-                        if duration != 0:
-                            total_amount_with_interest , duration = account.pay_emi(due_amount,total_amount_with_interest,duration)
-                            bank.balance += due_amount
-                            print(f"{due_amount} is paid and user current balance is {account.balance}")
-                            print(f"{duration} are remaining")
-                        else:
-                            print("all dues are paid ")
-                            break
-                except Exception as e:
-                    print(e)
-                    
-
-            case _:
+            case "7":
+                if bank.loan_users:
+                    print(f"loan users list{bank.loan_users}")
+                else:
+                    print("There is no loan users")
+            case "8":
                 flag = False
