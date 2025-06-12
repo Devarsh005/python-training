@@ -24,6 +24,8 @@ def is_valid_account(account_number:str):
                 raise TypeError("TypeError: Account number must numeric")
         if not int(account_number)>0:
             raise ValueError("valueError: account number should be greater than zero")
+        else:
+            return int(account_number)
     else:
         raise ValueError("ValueError: account number cannot empty")
 
