@@ -45,6 +45,7 @@ class Account:
         self.password = password
         self.balance = 0
         self.transactions = []
+        self.minimum_balance = 5000
         self.info = {"name":self.name , "account_number":self.account_number , "balance":self.balance}
     def profile(self):
         """show the user profile information like name , account_number and balance"""
@@ -65,20 +66,23 @@ class Account:
             self.transactions.append(f"credited {amount} from {sender}")
     def withdraw_money(self,money,reciever="you"):
         """withdraw a cash money from user account"""
-        if self.balance > money:
-            self.balance -= money
-            self.info["balance"] = self.balance
-            if reciever == "you":
-                self.transactions.append(f"{money} cash withdraw")
+        if self.balance >= money:
+            if self.balance-money > self.minimum_balance:
+                self.balance -= money
+                self.info["balance"] = self.balance
+                if reciever == "you":
+                    self.transactions.append(f"{money} cash withdraw")
+                else:
+                    self.transactions.append(f"{self.name} sent {money} to {reciever}")
             else:
-                self.transactions.append(f"{self.name} sent {money} to {reciever}")
+                print(f"minimum account balace is {self.minimum_balance} and after withdraw {money} from account , balance is {self.balance-money} which is less than minimum amount so you can't withdraw money")
         else:
             raise validations.InsuffiecientFundError("InsuffiecientFundError: insuffiecient balance")
     def transfer_amount(self,reciever:'Account',amount):
         """transfer the amount to one account to another account"""
         if self.account_number == reciever.account_number:
             raise validations.DuplicateAccountError("DuplicateAccountError: Reciever cannot be sender")
-        elif self.balance >amount:
+        elif self.balance-amount >self.minimum_balance:
             self.withdraw_money(amount,reciever.name)
             reciever.add_money(amount,self.name)
             # self.transactions.append(f"{self.name} sent {amount} to {reciever.name}")
@@ -95,12 +99,14 @@ class Account:
     def take_a_loan(self,amount,duration):
         """give a loan from bank to user"""
         interest_rate = 7
-        total_with_interest = amount + (amount*interest_rate/100)
+        monthly_interest = 7/12
+        total_with_interest = amount + (amount*monthly_interest/100)*duration
         emi = total_with_interest/duration
         self.balance += amount
         self.info['balance'] = self.balance
         print("loan passed")
         print(f"your minimum due per month is {emi}")
+        self.transactions.append(f"{self.name} take {amount} borrowed from Bank ")
         return total_with_interest,emi
     def pay_emi(self , due_amount,remaining_amount,duration):
         """give minimum due to bank """
@@ -108,6 +114,7 @@ class Account:
         duration -= 1
         self.balance -= due_amount
         self.info["balance"] = self.balance
+        self.transactions.append(f"{self.name} paid emi of ruppes {due_amount} to bank")
         return remaining_amount,duration
 
 
@@ -147,7 +154,7 @@ if __name__ == "__main__":
                     validations.is_valid_password(password)
                     account = bank.create_account(name,password,account_number) 
                     if account:
-                        print(f"user name :{name}\nuser_account_number:{account_number}\nAccount created successfully")
+                        print(f"user name : {name}\nuser_account_number: {account_number}\nAccount created successfully")
                     else:
                         print("Account number already exits\n please login")
                 except Exception as e:
@@ -185,7 +192,7 @@ if __name__ == "__main__":
                                     try:
                                         amount = float(input("enter amount - "))
                                         user_account.add_money(amount)
-                                        print(f"{amount} added . current balance - {user_account.check_balance()}")
+                                        print(f"{amount} cash added . current balance - {user_account.check_balance()}")
                                         bank.balance += amount
                                     except Exception as e:
                                         print(e)
@@ -225,15 +232,18 @@ if __name__ == "__main__":
                                 case "6":
                                     """take a loan from bank"""
                                     try:
-                                        amount = int(input("enter amount of loan"))
-                                        if amount < (bank.balance*20/100) :
-                                            bank.loan_users.append(user_account.account_number)
-                                            duration = int(input("enter duration for loan"))
-                                            total_amount_with_interest , due_amount = user_account.take_a_loan(amount,duration)
-                                            print(f"{user_account.name} account balance is {user_account.balance}")
-                                            bank.balance -= amount
+                                        amount = int(input("enter amount of loan - "))
+                                        if user_account.balance >=15000:
+                                            if amount < (bank.balance*20/100) :
+                                                bank.loan_users.append(user_account.account_number)
+                                                duration = int(input("enter duration for loan (in month) - "))
+                                                total_amount_with_interest , due_amount = user_account.take_a_loan(amount,duration)
+                                                print(f"{user_account.name} account balance is {user_account.balance}")
+                                                bank.balance -= amount
+                                            else:
+                                                print(f"amount is larger , amount should be less than {bank.balance*20/100}")
                                         else:
-                                            print(f"amount is larger , amount should be less than {bank.balance*20/100}")
+                                            print(f"{user_account.name} you are not eligible for loan, taking loan minimum balance is greater than 15000")
                                     except Exception as e:
                                         print(e)
                                 case "7":
@@ -247,7 +257,6 @@ if __name__ == "__main__":
                                                 print(f"{duration} are remaining")
                                             else:
                                                 print("all dues are paid ")
-                                                break
                                     except Exception as e:
                                         print(e)
                                 case "8":
